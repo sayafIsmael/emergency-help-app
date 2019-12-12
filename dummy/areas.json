@@ -1,0 +1,87 @@
+[
+    {
+        "name" : "Global",
+        "value" : "1",
+        "selected" : "true"
+    },
+    {
+        "name" : "Austin",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Baltimore",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Charlotte",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Detroit",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Los Angeles",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "New York City",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Philafelphia",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Phoneix",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Example",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Charlotte",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Detroit",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Los Angeles",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "New York City",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Philafelphia",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Phoneix",
+        "value" : "1",
+        "selected" : "false"
+    },
+    {
+        "name" : "Example",
+        "value" : "1",
+        "selected" : "false"
+    }
+]
