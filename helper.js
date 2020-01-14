@@ -1,0 +1,1 @@
+export const apiPrefix = "https://alertsnet.com/api/v1/"

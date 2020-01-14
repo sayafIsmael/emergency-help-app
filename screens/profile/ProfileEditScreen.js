@@ -6,11 +6,11 @@ import {
     TouchableOpacity,
     Image,
     ScrollView,
-    ActivityIndicator
+    ActivityIndicator,
+    TextInput
 } from 'react-native'
 
 import { moderateScale } from 'react-native-size-matters'
-import { TextInput } from 'react-native-gesture-handler'
 
 
 export default class ProfileEditScreen extends React.Component {

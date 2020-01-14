@@ -7,6 +7,7 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  AsyncStorage
 } from 'react-native'
 import Modal from "react-native-modal";
 import feeds from './../../dummy/feeds';
@@ -18,14 +19,48 @@ import Fontisto from "react-native-vector-icons/Fontisto";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { moderateScale } from 'react-native-size-matters'
 import FeedDetailsScreen from './FeedDetailsScreen'
-
+import { apiPrefix } from './../../helper'
+import axios from 'axios'
+import { Wave } from 'react-native-animated-spinkit'
 
 export default class FeedScreen extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
       sort: false,
-      showDetails: false
+      showDetails: false,
+      allAlerts: []
+    }
+    this.fetchAlert()
+  }
+
+  fetchAlert = async () => {
+    try {
+      const options = {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'bearer ' + token
+        }
+      };
+      let token = await AsyncStorage.getItem('token')
+      console.log("Tooooooken", token)
+
+      let url = `${apiPrefix}alerts`
+      let headers = {
+        Accept: 'application / json',
+        // 'Content-Type': 'application / json',
+        Authorization: `Bearer ${token}`
+      }
+      let alerts = await axios({
+        method: 'get',
+        url: url,
+        headers: headers,
+      })
+
+      console.log(`All alerts from response ${JSON.stringify(alerts.data.data)}`)
+      this.setState({allAlerts: alerts.data.data})
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -103,8 +138,9 @@ export default class FeedScreen extends React.Component {
         onBackdropPress={this.closeFeedDetails}
         onBackButtonPress={this.closeFeedDetails}
         onSwipeComplete={this.closeFeedDetails}
+        supportedOrientations={['portrait', 'landscape']}
       >
-        <FeedDetailsScreen/>
+        <FeedDetailsScreen />
       </Modal>
     )
   }
@@ -113,10 +149,10 @@ export default class FeedScreen extends React.Component {
    * All posts
    */
   renderFeeds = () => {
-    return feeds.map((feed, index) => {
+    return this.state.allAlerts.map((feed, index) => {
       return (
-        <TouchableOpacity style={styles.feedContainer} onPress={() => this.setState({ showDetails: true })}>
-          <Text style={styles.lightText}>{feed.time}</Text>
+        <TouchableOpacity key={index} style={styles.feedContainer} onPress={() => this.setState({ showDetails: true })}>
+          <Text style={styles.lightText}>{feed.updated_at}</Text>
           <View>
             <Text style={styles.feedTitle}>{feed.title}</Text>
           </View>
@@ -124,10 +160,10 @@ export default class FeedScreen extends React.Component {
           <View>
             <Image
               style={styles.feedImage}
-              source={{ uri: feed.file }}
+              source={{ uri: feed.thumb }}
             />
           </View>
-          <Text style={styles.lightText}>{feed.details}</Text>
+      <Text style={styles.lightText}>{/*feed.details*/}</Text>
           <View style={styles.feedButtonsContainer}>
             <View style={styles.feedBtnsHalf}>
               <TouchableOpacity style={styles.feedBtn}>
@@ -161,6 +197,9 @@ export default class FeedScreen extends React.Component {
         </TouchableOpacity>
         <ScrollView>
           {this.renderFeeds()}
+          {!this.state.allAlerts.length && <View style={{alignSelf: 'center', marginTop: moderateScale(250)}}>
+            <Wave size={48} color="#FFF"/>
+            </View>}
         </ScrollView>
         {this.locationSortingModal()}
         {this.feedDetailsModal()}
@@ -260,8 +299,8 @@ const styles = StyleSheet.create({
     paddingRight: moderateScale(15)
   },
   feedDetailsModal: {
-    justifyContent: 'flex-end',
     margin: 0,
+    flex: 1
   },
 
 })

@@ -5,30 +5,62 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  Image
+  Image,
+  AsyncStorage
 } from 'react-native'
-
-import FeatherIcon from 'react-native-vector-icons/Feather'
-
+import axios from 'axios'
 import { moderateScale } from 'react-native-size-matters'
-
+import { apiPrefix } from './../helper'
 
 export default class LoginScreen extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
       email: null,
-      password: null
+      password: null,
+      error: false
     }
+    this.checkAuth()
   }
 
   static navigationOptions = {
     header: null
   }
 
+  checkAuth = async () =>{
+    let token = await AsyncStorage.getItem("token")
+    if(token){
+      this.props.navigation.navigate('App')
+    }
+  }
+
   //Login User to the app
-  login = () =>{
-    this.props.navigation.navigate('App')
+  login = async () => {
+    try {
+      let user = {
+        email: this.state.email,
+        password: this.state.password
+      }
+      if (user.email && user.password) {
+        let response = await axios.post(apiPrefix + "login", user,
+          headers = {
+            'Accept': 'application/json',
+            // 'Content-Type': 'application/json'
+          });
+        console.log("Response jsoon: ", response)
+        let data = response.data
+        if (data.access_token) {
+          AsyncStorage.setItem("token", data.access_token)
+          this.props.navigation.navigate('App')
+        } else {
+          this.setState({ error: "Sorry something went wrong. Please try again." })
+        }
+      }
+      this.setState({error: "Please input all fields"})
+    } catch (error) {
+      console.log(error)
+      this.setState({ error: "Sorry something went wrong. Please try again." })
+    }
   }
 
   render() {
@@ -36,11 +68,15 @@ export default class LoginScreen extends React.Component {
       <View style={styles.container}>
         <Image
           style={{
-            width: moderateScale(100),
-            height: moderateScale(100)
+            width: moderateScale(300),
+            height: moderateScale(100),
+            backgroundColor: 'white',
+            marginBottom: moderateScale(30),
+            borderRadius: moderateScale(20)
           }}
-          source={require('./../public/images/logo.jpg')}
+          source={require('./../public/images/logo.png')}
         />
+
         <TextInput
           style={styles.input}
           keyboardType={'email-address'}
@@ -59,14 +95,17 @@ export default class LoginScreen extends React.Component {
           onChangeText={txt => this.setState({ password: txt })}
           secureTextEntry={true}
         />
+
+        {this.state.error && <Text style={{ color: 'red', paddingBottom: moderateScale(20) }}>{this.state.error}</Text>}
+
         <TouchableOpacity style={styles.loginButton}
-        onPress={() => this.login()}
+          onPress={() => this.login()}
         >
           <Text style={styles.buttonTxt}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.registerButton}
-          onPress={() =>     this.props.navigation.navigate('Registration')}
+          onPress={() => this.props.navigation.navigate('Registration')}
         >
           <Text style={styles.buttonTxt}>Register</Text>
         </TouchableOpacity>
@@ -99,7 +138,7 @@ const styles = StyleSheet.create({
     borderRadius: moderateScale(8),
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: moderateScale(15)
+    marginBottom: moderateScale(20)
   },
   registerButton: {
     width: '80%',

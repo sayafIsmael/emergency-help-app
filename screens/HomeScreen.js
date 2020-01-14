@@ -5,7 +5,7 @@ import {
   View,
   ActivityIndicator
 } from 'react-native'
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 
 import FeatherIcon from 'react-native-vector-icons/Feather'
 
@@ -49,6 +49,15 @@ export default class HomeScreen extends React.Component {
             }}
             customMapStyle={mapStyle.customStyle}
           >
+            <Marker
+            title="hello world"
+            coordinate={
+              {latitude: 37.78825,
+              longitude: -122.4324,}
+            }
+            >
+              
+            </Marker>
           </MapView>
         </View>
       </View>

@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
+  AsyncStorage
 } from 'react-native'
 import { Switch } from 'react-native-switch';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign'
@@ -135,7 +136,9 @@ export default class ProfileScreen extends React.Component {
             <TouchableOpacity>
               <Text style={styles.footerText}>PRIVACY POLICY</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+            onPress={() => {AsyncStorage.removeItem("token"); this.props.navigation.navigate("Login")}}
+            >
               <Text style={styles.footerText}>LOGOUT</Text>
             </TouchableOpacity>
             <Text style={styles.footerTextVrsn}>v0.1</Text>
