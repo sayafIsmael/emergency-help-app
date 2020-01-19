@@ -97,7 +97,7 @@ export default class PostScreen extends React.Component {
             <View style={styles.container}>
                 <View style={styles.header}>
                     <TouchableOpacity
-                        onPress={() => this.props.navigation.navigate('PostHome')}
+                        onPress={() => this.props.navigation.navigate('Feed')}
                     >
                         <Ionicons name={'md-arrow-back'} size={moderateScale(30)} color={'#35B852'} />
                     </TouchableOpacity>
@@ -127,9 +127,6 @@ export default class PostScreen extends React.Component {
                     }}
                 />
                 <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center' }}>
-                    <TouchableOpacity onPress={this.takePicture.bind(this)} style={styles.capture}>
-                        <Text style={{ fontSize: 14 }}> SNAP </Text>
-                    </TouchableOpacity>
                     {button}
                 </View>
 

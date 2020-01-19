@@ -138,7 +138,9 @@ export default class App extends React.Component {
                             <View style={style.sliderCont}>
                                 <View style={style.timer}>
                                     <Text style={{ color: 'white' }}>{this.getTime(currentTime)}</Text>
-                                    <Text style={{ color: 'white' }}>{this.getTime(duration)}   <Icon onPress={this.fullscreen} name={fullscreen ? 'compress' : 'expand'} style={{ fontSize: 15 }} /></Text>
+                                    <Text style={{ color: 'white' }}>{this.getTime(duration)}  
+                                     {/* <Icon onPress={this.fullscreen} name={fullscreen ? 'compress' : 'expand'} style={{ fontSize: 15 }} /> */}
+                                     </Text>
                                 </View>
                                 <Slider
                                     // we want to add some param here

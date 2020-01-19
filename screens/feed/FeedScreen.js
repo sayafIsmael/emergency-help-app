@@ -22,6 +22,8 @@ import FeedDetailsScreen from './FeedDetailsScreen'
 import { apiPrefix } from './../../helper'
 import axios from 'axios'
 import { Wave } from 'react-native-animated-spinkit'
+import moment from 'moment'
+import Spinner from 'react-native-loading-spinner-overlay';
 
 export default class FeedScreen extends React.Component {
   constructor(props) {
@@ -29,23 +31,25 @@ export default class FeedScreen extends React.Component {
     this.state = {
       sort: false,
       showDetails: false,
-      allAlerts: []
+      allAlerts: [],
+      alert: [],
+      loadingAlert: false,
+      selectedCity: null,
+      cities: []
     }
     this.fetchAlert()
+    this.renderAreas()
   }
 
-  fetchAlert = async () => {
-    try {
-      const options = {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'bearer ' + token
-        }
-      };
-      let token = await AsyncStorage.getItem('token')
-      console.log("Tooooooken", token)
 
-      let url = `${apiPrefix}alerts`
+
+  fetchAlert = async (cityId = null) => {
+    try {
+      console.log(cityId)
+      this.setState({ loadingAlert: true })
+      let token = await AsyncStorage.getItem('token')
+
+      let url = cityId ? `${apiPrefix}alerts?city_id=${cityId}` : `${apiPrefix}alerts`
       let headers = {
         Accept: 'application / json',
         // 'Content-Type': 'application / json',
@@ -58,7 +62,7 @@ export default class FeedScreen extends React.Component {
       })
 
       console.log(`All alerts from response ${JSON.stringify(alerts.data.data)}`)
-      this.setState({allAlerts: alerts.data.data})
+      this.setState({ allAlerts: alerts.data.data, loadingAlert: false })
     } catch (error) {
       console.log(error)
     }
@@ -79,6 +83,7 @@ export default class FeedScreen extends React.Component {
   **Location sorting modal
   */
   locationSortingModal = () => {
+    let active = <MaterialCommunityIcons name={'checkbox-marked-circle'} size={moderateScale(16)} color={'#13B948'} />;
     return (
       <Modal
         testID={'sortLocation'}
@@ -95,7 +100,18 @@ export default class FeedScreen extends React.Component {
             <FontAwesome5Icon name={'minus'} size={moderateScale(50)} color={'#323133'} />
           </View>
           <ScrollView>
-            {this.renderAreas()}
+            <TouchableOpacity style={styles.areaContainer} onPress={() => {this.closeSorting(); this.setState({ selectedCity: null }); this.fetchAlert(null)}}>
+              <Text style={!this.state.selectedCity ? styles.areaSelectedTxt : styles.areaTxt}>Global</Text>
+              {!this.state.selectedCity ? active : null}
+            </TouchableOpacity>
+            {this.state.cities.map((city, index) => {
+              return (
+                <TouchableOpacity key={index} style={styles.areaContainer} onPress={() => { this.closeSorting(); this.setState({ selectedCity: city.name }); this.fetchAlert(city.id) }}>
+                  <Text style={city.name == this.state.selectedCity ? styles.areaSelectedTxt : styles.areaTxt}>{city.name}</Text>
+                  {city.name == this.state.selectedCity ? active : null}
+                </TouchableOpacity>
+              )
+            })}
           </ScrollView>
         </View>
       </Modal>
@@ -105,16 +121,28 @@ export default class FeedScreen extends React.Component {
   /**
    * Areas for sorting
    */
-  renderAreas = () => {
-    let active = <MaterialCommunityIcons name={'checkbox-marked-circle'} size={moderateScale(16)} color={'#13B948'} />;
-    return areas.map((area, index) => {
-      return (
-        <TouchableOpacity style={styles.areaContainer} onPress={this.closeSorting}>
-          <Text style={area.selected == "true" ? styles.areaSelectedTxt : styles.areaTxt}>{area.name}</Text>
-          {area.selected == "true" ? active : null}
-        </TouchableOpacity>
-      )
-    })
+  renderAreas = async () => {
+    try {
+      let token = await AsyncStorage.getItem('token')
+      let url = `${apiPrefix}cities`
+      let headers = {
+        Accept: 'application / json',
+        Authorization: `Bearer ${token}`
+      }
+      let response = await axios({
+        method: 'get',
+        url: url,
+        headers: headers,
+      })
+      let cities = response.data.data
+      if (cities.length > 0) {
+        this.setState({ cities })
+
+      }
+    } catch (error) {
+      console.log(error)
+    }
+
   }
 
   /*
@@ -140,19 +168,46 @@ export default class FeedScreen extends React.Component {
         onSwipeComplete={this.closeFeedDetails}
         supportedOrientations={['portrait', 'landscape']}
       >
-        <FeedDetailsScreen />
+        <FeedDetailsScreen alert={this.state.alert} />
       </Modal>
     )
   }
 
+  showDetails = async (id) => {
+    try {
+      this.setState({ loadingAlert: true })
+      let token = await AsyncStorage.getItem('token')
+
+      let url = `${apiPrefix}alerts/${id}`
+      let headers = {
+        Accept: 'application / json',
+        // 'Content-Type': 'application / json',
+        Authorization: `Bearer ${token}`
+      }
+      let alert = await axios({
+        method: 'get',
+        url: url,
+        headers: headers,
+      })
+
+      console.log(`Alert from response ${JSON.stringify(alert.data.data)}`)
+
+      if (alert.data.data) {
+        this.setState({ alert: alert.data.data, showDetails: true, loadingAlert: false })
+      }
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
   /**
    * All posts
    */
   renderFeeds = () => {
     return this.state.allAlerts.map((feed, index) => {
       return (
-        <TouchableOpacity key={index} style={styles.feedContainer} onPress={() => this.setState({ showDetails: true })}>
-          <Text style={styles.lightText}>{feed.updated_at}</Text>
+        <TouchableOpacity key={index} style={styles.feedContainer} onPress={() => this.showDetails(feed.id)}>
+          <Text style={styles.lightText}>{moment(feed.updated_at).format('MMMM Do, h:mm a')}</Text>
           <View>
             <Text style={styles.feedTitle}>{feed.title}</Text>
           </View>
@@ -163,16 +218,16 @@ export default class FeedScreen extends React.Component {
               source={{ uri: feed.thumb }}
             />
           </View>
-      <Text style={styles.lightText}>{/*feed.details*/}</Text>
+          <Text style={styles.lightText}>{/*feed.details*/}</Text>
           <View style={styles.feedButtonsContainer}>
             <View style={styles.feedBtnsHalf}>
               <TouchableOpacity style={styles.feedBtn}>
-                <FontAwesomeIcon name={'user'} style={styles.headerArroow} size={moderateScale(20)} color={'#3C84AE'} />
-                <Text style={styles.btnTxt}>{feed.likes}</Text>
+                <Fontisto name={'like'} style={styles.headerArroow} size={moderateScale(20)} color={'#03a1fc'} />
+                <Text style={styles.btnTxt}>{feed.likes_count}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.feedBtn}>
                 <FontAwesomeIcon name={'commenting'} style={styles.commentIcon} size={moderateScale(20)} color={'white'} />
-                <Text style={styles.btnTxt}>{feed.comments}</Text>
+                <Text style={styles.btnTxt}>{feed.comments_count}</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.feedBtn1}>
@@ -192,14 +247,20 @@ export default class FeedScreen extends React.Component {
         {/* <ActivityIndicator size="large" color={"white"} /> */}
 
         <TouchableOpacity style={styles.header} onPress={() => this.setState({ sort: !this.state.sort })}>
-          <Text style={styles.headerTxt}>GLOBAL</Text>
+          <Text style={styles.headerTxt}>{this.state.selectedCity ? this.state.selectedCity : "Global"}</Text>
           <MaterialIcon name={'keyboard-arrow-down'} style={styles.headerArroow} size={moderateScale(25)} color={'#5E5E5E'} />
         </TouchableOpacity>
+        <Spinner
+          visible={this.state.loadingAlert}
+          textContent={'Loading...'}
+          textStyle={styles.spinnerTextStyle}
+          animation={'fade'}
+        />
         <ScrollView>
           {this.renderFeeds()}
-          {!this.state.allAlerts.length && <View style={{alignSelf: 'center', marginTop: moderateScale(250)}}>
-            <Wave size={48} color="#FFF"/>
-            </View>}
+          {!this.state.allAlerts.length && <View style={{ alignSelf: 'center', marginTop: moderateScale(250) }}>
+            <Wave size={48} color="#FFF" />
+          </View>}
         </ScrollView>
         {this.locationSortingModal()}
         {this.feedDetailsModal()}
@@ -302,5 +363,7 @@ const styles = StyleSheet.create({
     margin: 0,
     flex: 1
   },
-
+  spinnerTextStyle: {
+    color: '#FFF'
+  },
 })
